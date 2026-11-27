@@ -19,3 +19,17 @@ https://github.com/Blockchains/kernaldojo
 ## Licence posture
 
 Read the MiniMax-H3 community licence before downloading weights. Do not treat open weights as unrestricted. Programme text in this repo is published so the course can be read and forked.
+
+## Tests
+
+CPU only. No GPU, no claimed speedup.
+
+```bash
+python -m unittest discover -s public/programme/modules/00-roofline -p 'test_*.py'
+python -m unittest discover -s public/programme/modules/04-cache -p 'test_*.py'
+```
+
+`00-roofline` checks intensity, the ridge, and the fusion byte ratio.
+`04-cache` is a simulated error horizon: threshold 0 does not drift, a forced refresh bounds a run of skips, and a segment reset beats carrying the error across. It is not a video model.
+
+GitHub Actions workflow: `.github/workflows/cpu.yml`.
