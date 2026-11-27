@@ -6,9 +6,9 @@ import {
   kernelFamilies,
   kernelForks,
   methodSteps,
-  type DiagramId,
   type KernelFamily,
 } from "@/lib/kernels";
+import { drills, pageWaste, qkvBytes, quantCodes, scoreBytes, sessions, tileBytes } from "@/lib/kernel-desk";
 
 const title = "Advanced GPU Kernel Engineering | KernelDojo";
 const description =
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/kernels")({
   component: KernelsPage,
 });
 
-const diagrams: { id: DiagramId; src: string; alt: string; caption: string }[] = [
+const diagrams: { id: string; src: string; alt: string; caption: string }[] = [
   {
     id: "roofline",
     src: "/diagrams/roofline.svg",
@@ -76,14 +76,41 @@ const diagrams: { id: DiagramId; src: string; alt: string; caption: string }[] =
     alt: "Skip-error diagram. Signal is high at the first and last step. Error climbs through skipped middle steps until a reset.",
     caption: "Simulated. Not a DiT. Threshold zero must not drift. A segment reset beats carrying the error.",
   },
+  {
+    id: "softmax",
+    src: "/diagrams/softmax.svg",
+    alt: "Online softmax. Three tiles arrive in order. When the maximum jumps, the running sum is rescaled. The score matrix is never stored.",
+    caption: "Tiling does not reduce the math. Forgetting the rescale makes an exact kernel inexact.",
+  },
+  {
+    id: "quant",
+    src: "/diagrams/quant.svg",
+    alt: "Four bars, three short and one tall. The tall bar sets the quantisation step.",
+    caption: "One outlier sets the step. Smaller values round down, sometimes to zero. The picture goes flat before a NaN.",
+  },
+  {
+    id: "pages",
+    src: "/diagrams/pages.svg",
+    alt: "Paged KV for lengths 100 and 5 on pages of 16, which wastes less than padding both to 100. A coarse page can still lose.",
+    caption: "Lengths 100 and 5: paging wastes 23, padding wastes 95. Lengths 17 and 3: paging wastes more. A page is not free.",
+  },
 ];
 
 function KernelsPage() {
   const [family, setFamily] = useState<(typeof kernelFamilies)[number]>("All");
+  const [n, setN] = useState(4096);
   const rows = useMemo(
     () => (family === "All" ? kernelForks : kernelForks.filter((k) => k.family === family)),
     [family],
   );
+  const safeN = Number.isFinite(n) && n >= 1 && n <= 8192 ? Math.floor(n) : 4096;
+  const scores = scoreBytes(safeN);
+  const qkv = qkvBytes(safeN);
+  const tile = tileBytes();
+  const codes = quantCodes([0.2, 0.05, 0.02, 8]);
+  const wide = pageWaste([100, 5], 16);
+  const coarse = pageWaste([17, 3], 16);
+  const hours = sessions.reduce((sum, s) => sum + s.hours, 0);
 
   return (
     <Shell>
@@ -110,6 +137,74 @@ function KernelsPage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="mt-8" aria-labelledby="sessions">
+          <h2 id="sessions" className="text-xl font-medium">
+            Eight sessions, {hours} hours
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            Hours are the work, not a video. Each session opens one fork and leaves a number you computed. None of those numbers is a GPU time.
+          </p>
+          <ol className="mt-3 flex flex-col gap-2">
+            {sessions.map((s, i) => (
+              <li key={s.title} className="rounded-lg border border-line px-3 py-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-mono text-xs text-accent">{String(i + 1).padStart(2, "0")} · {s.hours} h</p>
+                  <p className="font-mono text-xs text-muted">{s.fork}</p>
+                </div>
+                <h3 className="mt-1 text-lg font-medium">{s.title}</h3>
+                <p className="mt-1 text-sm">{s.work}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="mt-8" aria-labelledby="desk">
+          <h2 id="desk" className="text-xl font-medium">
+            Desk
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            The same functions as <span className="font-mono">modules/gpu/kernel_math.py</span>. The unit test is the answer key. This is not a profile.
+          </p>
+          <label className="mt-4 block text-sm" htmlFor="seq">
+            Sequence length N
+            <input
+              id="seq"
+              type="number"
+              min={1}
+              max={8192}
+              value={n}
+              onChange={(e) => setN(Number(e.target.value))}
+              className="mt-1 block min-h-11 w-full rounded-lg border border-line bg-bg px-3 font-mono"
+            />
+          </label>
+          <dl className="mt-3 grid grid-cols-2 gap-2">
+            {[
+              ["Score matrix", group(scores)],
+              ["Q, K and V", group(qkv)],
+              ["One 64×64 tile", group(tile)],
+              ["Tiles in the matrix", group(Math.floor(scores / tile))],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-lg border border-line bg-surface px-3 py-3">
+                <dt className="font-mono text-xs text-muted">{k}</dt>
+                <dd className="mt-1 font-mono text-sm">{v} B</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-sm">
+            BF16, head dim 128. At N={safeN} the matrix is {group(scores)} bytes and one tile is {group(tile)}. Exact tiling still covers every tile. It stops the matrix living in memory.
+          </p>
+          <div className="mt-4 rounded-lg border border-line bg-surface px-3 py-3 text-sm">
+            <p>
+              <span className="font-mono text-xs text-accent">Quant. </span>
+              Values 0.2, 0.05, 0.02, 8 onto 127 levels become {codes.join(", ")}. The 8 stays at 127. The 0.02 becomes 0.
+            </p>
+            <p className="mt-2">
+              <span className="font-mono text-xs text-accent">Pages. </span>
+              Lengths 100 and 5, page 16: waste {wide.waste}, padding waste {wide.staticWaste}. Lengths 17 and 3: waste {coarse.waste}, padding waste {coarse.staticWaste}. The second case is worse.
+            </p>
+          </div>
         </section>
 
         <section className="mt-8" aria-labelledby="figures">
@@ -183,6 +278,7 @@ function KernelsPage() {
                   {k.failure}
                 </p>
                 <p className="px-4 pt-2 text-sm text-muted">{k.caution}</p>
+                {drills[k.id] ? <p className="px-4 pt-2 text-sm">{drills[k.id]}</p> : null}
                 <p className="px-4 py-3 font-mono text-xs text-muted">
                   {k.license} · {k.language}
                   <a className="mt-1 block text-accent" href={`#${k.diagram}`}>
@@ -204,6 +300,10 @@ function KernelsPage() {
       </article>
     </Shell>
   );
+}
+
+function group(n: number) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 function iLabel(family: "All" | KernelFamily, n: number) {

@@ -18,3 +18,6 @@ jobs:
       - name: Simulated cache error horizon
         working-directory: public/programme/modules/04-cache
         run: python -m unittest test_error_horizon.py
+      - name: Kernel byte arithmetic
+        working-directory: public/programme/modules/gpu
+        run: python -m unittest test_kernel_math.py

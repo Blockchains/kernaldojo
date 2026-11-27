@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="smTitle smDesc">
+  <title id="smTitle">Online softmax</title>
+  <desc id="smDesc">Scores arrive in tiles. The running maximum steps up when a later tile is larger, and the earlier sum is rescaled. The full score matrix is never stored.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="42" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Online softmax</text>
+  <rect x="32" y="80" width="150" height="90" fill="#1c1914"/>
+  <text x="48" y="132" fill="#efe8d8" font-family="IBM Plex Mono, monospace" font-size="16">tile · max 1</text>
+  <rect x="210" y="80" width="150" height="90" fill="#e2a322"/>
+  <text x="226" y="124" fill="#1a1408" font-family="IBM Plex Mono, monospace" font-size="16">tile · max 3</text>
+  <text x="226" y="148" fill="#1a1408" font-family="IBM Plex Sans, sans-serif" font-size="14">rescale the sum</text>
+  <rect x="388" y="80" width="150" height="90" fill="#1c1914"/>
+  <text x="404" y="132" fill="#efe8d8" font-family="IBM Plex Mono, monospace" font-size="16">tile · max 2</text>
+  <text x="32" y="230" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">Running max: 1, then 3, then 3.</text>
+  <text x="32" y="262" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">Forgetting the rescale makes an exact kernel inexact.</text>
+  <text x="32" y="310" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">Tiling does not reduce the math. It reduces what stays resident.</text>
+</svg>
