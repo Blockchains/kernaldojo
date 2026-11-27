@@ -3,18 +3,16 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "KernelDojo";
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: APP_NAME },
+      { title: "KernelDojo — Advanced GPU Kernel Engineering" },
       {
         name: "description",
         content:
-          "KernelDojo is a GitHub-style programme for AI inference kernels. Reproduce fusion, sparse attention and step caching. Measure the speedup. Keep the quality.",
+          "KernelDojo.com is a GitHub-style programme in Advanced GPU Kernel Engineering. Fork real GPU libraries, read the kernel, measure the bound. Fusion, attention, quantisation. No borrowed speedups.",
       },
       { name: "theme-color", content: "#121410" },
     ],

@@ -19,3 +19,14 @@ https://github.com/Blockchains/kernaldojo
 ## Licence posture
 
 Read the MiniMax-H3 community licence before downloading weights. Do not treat open weights as unrestricted. Programme text in this repo is published so the course can be read and forked.
+
+## Advanced GPU Kernel Engineering
+
+The method is documented in [docs/advanced-gpu-kernel-engineering.md](docs/advanced-gpu-kernel-engineering.md).
+
+Public page: https://kerneldojo.com/kernels
+
+Thirteen GPU kernel repositories are forked on the Blockchains account. The page names the file to open, the failure to provoke, and the upstream licence. Star counts are upstream as of 27 Nov 2026. No speedup in that list was measured by KernelDojo.
+
+Diagrams, original and not taken from papers: `public/diagrams/`.
+

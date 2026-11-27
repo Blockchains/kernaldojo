@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="tlTitle tlDesc">
+  <title id="tlTitle">Attention tiles</title>
+  <desc id="tlDesc">A grid of attention tiles. Filled tiles are computed exactly. Empty tiles are the ones a sparse kernel must actually skip. A hatched tile is a cheap proxy, not a zero written after a dense multiply.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="40" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Attention tiles</text>
+  <g transform="translate(32 72)">
+    <rect x="0" y="0" width="64" height="64" fill="#1c1914"/>
+    <rect x="72" y="0" width="64" height="64" fill="#1c1914"/>
+    <rect x="144" y="0" width="64" height="64" fill="none" stroke="#1c1914" stroke-width="2"/>
+    <rect x="216" y="0" width="64" height="64" fill="none" stroke="#1c1914" stroke-width="2"/>
+    <rect x="0" y="72" width="64" height="64" fill="#1c1914"/>
+    <rect x="72" y="72" width="64" height="64" fill="#e2a322"/>
+    <rect x="144" y="72" width="64" height="64" fill="none" stroke="#1c1914" stroke-width="2"/>
+    <rect x="216" y="72" width="64" height="64" fill="none" stroke="#1c1914" stroke-width="2"/>
+    <rect x="0" y="144" width="64" height="64" fill="#1c1914"/>
+    <rect x="72" y="144" width="64" height="64" fill="#e2a322"/>
+    <rect x="144" y="144" width="64" height="64" fill="#e2a322"/>
+    <rect x="216" y="144" width="64" height="64" fill="none" stroke="#1c1914" stroke-width="2"/>
+  </g>
+  <text x="340" y="120" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">filled = exact</text>
+  <text x="340" y="156" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">gold = proxy, not a zero</text>
+  <text x="340" y="192" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">empty = skipped work</text>
+  <text x="32" y="330" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">A mask after a full GEMM still computed the empty tiles.</text>
+</svg>

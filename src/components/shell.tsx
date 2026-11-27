@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, FolderGit2, Gauge, MoreHorizontal, Trophy } from "lucide-react";
+import { BookOpen, Cpu, FolderGit2, Gauge, MoreHorizontal } from "lucide-react";
 
 export const REPO_URL = "https://github.com/Blockchains/kernaldojo";
 
 const primary = [
   { to: "/path", label: "Path", icon: BookOpen },
+  { to: "/kernels", label: "Kernels", icon: Cpu },
   { to: "/bench", label: "Bench", icon: Gauge },
   { to: "/repo", label: "Repo", icon: FolderGit2 },
-  { to: "/leaderboard", label: "Board", icon: Trophy },
 ] as const;
 
 const moreLinks = [
@@ -17,6 +17,7 @@ const moreLinks = [
   { to: "/risks", label: "Risks" },
   { to: "/plan", label: "30-day plan" },
   { to: "/contribute", label: "Pull requests" },
+  { to: "/leaderboard", label: "Board" },
 ] as const;
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -39,11 +40,20 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="inline-block size-3 bg-accent" aria-hidden />
             <span className="text-base font-medium tracking-tight">KernelDojo</span>
           </Link>
+          <Link
+            to="/kernels"
+            className={
+              "inline-flex min-h-11 items-center text-sm font-medium " +
+              (pathname.startsWith("/kernels") ? "text-accent" : "text-fg")
+            }
+          >
+            Kernels
+          </Link>
           <a
             href={REPO_URL}
             className="ml-auto inline-flex min-h-11 items-center font-mono text-xs text-muted"
           >
-            Blockchains/kernaldojo
+            GitHub
           </a>
         </div>
       </header>

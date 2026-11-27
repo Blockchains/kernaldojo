@@ -37,7 +37,12 @@ def roofline_seconds(flops: float, nbytes: float, peak: float, bandwidth: float)
   },
   {
     type: "p",
-    text: "Decode versus a diffusion step. A single-token GEMM reads a large weight matrix and writes a small activation. Intensity is low. The machine is a memory system that happens to multiply. A video DiT step applies those weights to a long token axis, then spends a quadratic-looking attention on that axis. Intensity climbs, and attention stops being free. That is why Module 1 (fusion, launch overhead) and Module 3 (attention) are different tools, and why a trick that wins on decode can do almost nothing on a 50-step sampler.",
+    text: "Worked arithmetic, the same numbers the unit test checks. Peak 200 TFLOP/s and bandwidth 2 TB/s put the ridge at 100 FLOP/byte. Four FLOPs moving four bytes is intensity 1, which is memory-bound: the roofline time is the byte time, not the FLOP time. A thousand FLOPs on those same four bytes is intensity 250, which is compute-bound. If you cannot reproduce that with a pencil, do not open a profiler yet.",
+  },
+  {
+    type: "note",
+    tag: "Wrong conclusion",
+    text: "‘The kernel uses Tensor Cores, so it is compute-bound.’ Tensor Cores raise the ridge. They do not move a streaming copy onto the right-hand side. Check intensity first.",
   },
   {
     type: "table",
@@ -142,8 +147,8 @@ def bench(d=768, s=1024):
   },
   {
     type: "note",
-    tag: "Failure you should hit on purpose",
-    text: "Capture at sequence 1024, then call the graph at 2048. Record the error in the PR. A graph that has never failed in your hands is a graph you have not tested.",
+    tag: "Wrong conclusion",
+    text: "‘Compiled was slower, so compile does not work.’ You timed the compile. Run the warmup, then time the replay. If it is still slower, then you have a result: say whether a graph recaptured because the address changed. Also capture at sequence 1024 and call it at 2048. Record the error. A graph that has never failed has not been tested.",
   },
   {
     type: "p",
@@ -164,62 +169,95 @@ def bench(d=768, s=1024):
 const skeleton = (id: string): Block[] => {
   const common: Record<string, Block[]> = {
     "2": [
-      { type: "p", text: "Write one fused kernel in Triton. RMSNorm with an affine scale, or a linear epilogue that applies a bias and writes the residual add. Match eager PyTorch. Then time it. Then put the point on a roofline whose peak you can defend." },
+      { type: "p", text: "Write one fused kernel in Triton. RMSNorm with an affine scale, or a bias plus residual in the epilogue of a GEMM. The reference is eager PyTorch. The point of the kernel is a round trip you can point at in the byte count, not a new algorithm." },
+      { type: "p", text: "Order of work. Get allclose green on a multiple of the tile and on a tail (N = BLOCK + 17). Then autotune. Then time, with the search outside the timer. Then place FLOPs and bytes on the Module 0 roofline. If you reverse that order you will tune a kernel that drops the last rows." },
       { type: "ul", items: [
-        "Acceptance: torch.testing.assert_close against eager, tolerance stated, including a negative-valued input.",
-        "Acceptance: benchmark process does not include autotune search time.",
-        "Acceptance: one rejected tile size with a reason (spill, tail, occupancy).",
-        "CUTLASS or CuTe DSL is optional and only after the Triton test is green.",
+        "Mask the tail on both the load and the store. For scores, the masked fill is a large negative, not zero. Zero is a real logit.",
+        "Acceptance: torch.testing.assert_close, tolerance written next to the dtype. FP16 is not FP32.",
+        "Acceptance: the benchmark process does not include autotune search time, and the winning config is in the JSON.",
+        "Acceptance: one rejected tile, with a reason (spill, tail waste, or a short sequence where eager wins).",
+        "CUTLASS or CuTe is optional, and only after the Triton test is green. A second language is not a result.",
       ]},
+      { type: "note", tag: "Wrong conclusion", text: "‘Occupancy is 100%, so the kernel is fast.’ Occupancy is a means. Achieved bandwidth or a passing roofline is the result. A tile that uses too many registers can be slower at higher occupancy than a smaller tile that hits the memory ceiling." },
       { type: "note", tag: "UNTESTED", text: "No Triton in this preview. Do not invent a microbenchmark to fill the table." },
     ],
     "3": [
-      { type: "p", text: "Implement tiled attention for a short sequence, compared with scaled_dot_product_attention. Then add a block mask that actually skips tiles. Sweep exact-block density at three points. Quality is distance to the dense output." },
+      { type: "p", text: "Build or call an exact tiled attention and match scaled_dot_product_attention on a short sequence, mask included. Only then add a block rule. If the exact kernel is already faster than eager materialised softmax, that gap is tiling, not sparsity. Put it in its own row or you will congratulate the wrong change." },
+      { type: "p", text: "Three different sparse ideas get conflated in write-ups. Exact tiled attention computes every score, just not all at once. A hard drop sets low-mass blocks to zero and throws their softmax mass away. Sol-Attn, as the NVIDIA note describes it, keeps a cheap proxy for the blocks it does not compute exactly, inside the online softmax. Your PR has to say which of the three you implemented. ‘Sparse attention’ is not a name." },
       { type: "ul", items: [
-        "Acceptance: peak memory grows slower than sequence squared on the short-sequence test, or you explain why the allocator hides it.",
-        "Acceptance: a mask applied after a full matmul does not count as sparse. The profiler has to show the skipped work.",
-        "Acceptance: if you implement a sink, its length comes from the model's token layout, not from the number 951.",
+        "Acceptance: a profile shows the skipped tiles were not launched. A zero mask after a dense GEMM does not count.",
+        "Acceptance: the diagonal, and any text prefix the model uses as a sink, stay exact unless the experiment is specifically about dropping them. Then expect prompt adherence to die and say so.",
+        "Acceptance: three densities, three distances to the dense output, one shape, one seed, one step count.",
+        "A cutoff copied from a 50-step policy (first 10 steps, first two layers dense) is a new experiment on a 4-step sampler. Label it as yours.",
       ]},
-      { type: "note", tag: "Claims to read, not to paste", text: "Spark-H3, Sol-Attn, Token2Tile and Sol³ are in Sources. Quote them with the URL. Your table is empty until you fill it." },
+      { type: "note", tag: "Wrong conclusion", text: "‘LPIPS barely moved, so the method is lossless.’ LPIPS is a frame distance. Flicker, hands, and a prompt that stopped steering can hide under a small mean. Keep one nasty frame and look at it. The capstone’s blind pairs exist because of this." },
+      { type: "note", tag: "Claims to read, not to paste", text: "Spark-H3, Sol-Attn and Sol³ are on the Sources page. Quote the URL and the workload. Your table stays empty until you fill it." },
     ],
     "4": [
-      { type: "p", text: "Implement the first-block residual gate on the synthetic DiT. Sweep the threshold. Plot skip rate and error against step, then against three chained segments. Include the broken run that forgets to reset the cache." },
+      { type: "p", text: "A skip is only a skip if the decision is cheaper than the step. TeaCache’s probe is the timestep embedding’s residual. First Block Cache’s probe is the relative change of the first block. Both are bets that a small probe means the rest of the network barely moved. Verify the bet on your model. Do not import the threshold." },
+      { type: "p", text: "The teaching model in public/programme/modules/04-cache/error_horizon.py is not a DiT. Signal is U-shaped: high at the first and last step, low in the middle. A skip adds a fixed drift. A dense step, a forced refresh, or a segment reset sets the running error back to zero. The unit test checks four facts you should be able to say out loud: threshold 0 never drifts; an aggressive threshold drifts every step; a forced refresh bounds the run of skips; a reset at a boundary beats carrying the error across." },
+      {
+        type: "code",
+        label: "SIMULATED — error_horizon.trace",
+        code: `def signal(t, steps):
+    # 1 at both ends, 0 in the middle
+    return abs((t / (steps - 1)) - 0.5) * 2
+
+# dense if threshold <= 0, or signal >= threshold,
+# or t hits force_every, or t is a segment reset.
+# else error += drift`,
+      },
       { type: "ul", items: [
-        "Acceptance: at threshold 0 the output matches the uncached loop within tolerance.",
-        "Acceptance: a segment-cut test fails if the cache is reused, and passes if it is cleared.",
-        "Acceptance: the shipped threshold is one point on a curve, not a single still you liked.",
+        "Acceptance: threshold 0 matches the uncached loop within a tolerance you wrote down before looking.",
+        "Acceptance: the segment-cut test fails if the cache is reused and passes if it is cleared. Score the concatenation.",
+        "Acceptance: the shipped threshold is one marked point on a curve of skip rate versus error.",
+        "Use a relative delta. An absolute L2 tracks the scale of the activation and will look like ‘the cache stopped working’ halfway through a clip.",
       ]},
-      { type: "note", tag: "SIMULATED drill", text: "The in-browser cache drill uses a teaching model of error. It is not FBCache on H3. Use it to learn the shape of the bug, then replace it with your measurement." },
+      { type: "note", tag: "Wrong conclusion", text: "‘Reuse rate is 70%, close to the 67% in the H100 write-up, so the method matches.’ Reuse rate is not quality, and their 67.35% is one claimed run on MiniMax-H3. Your percentage on a toy is a different fact." },
+      { type: "note", tag: "SIMULATED drill", text: "python -m unittest discover -s public/programme/modules/04-cache -p 'test_*.py'. The in-browser drill is the same idea. Neither is FBCache on H3." },
     ],
     "5": [
-      { type: "p", text: "Quantise one GEMM. Keep softmax and the residual add wider. Name the format, the scale axis, and the SM you ran on. If the kernel fell back, the timing is not an FP8 result." },
+      { type: "p", text: "Quantise the tensor you store. Accumulate the math wider. The failure mode to provoke: a residual a hundred times smaller than the activation, cast to the storage type before the add, vanishes. The block then ignores the update and the picture goes mushy without a NaN to alert you." },
+      { type: "p", text: "Per-tensor scale is a hypothesis. Eight outlier channels set the quantum; the bulk rounds to nothing. Mask padding before you take amax. A batch that is half zeros will lie about the scale. Histogram, then scale, then a single GEMM against FP32, then a video. Do not start at the video." },
       { type: "ul", items: [
-        "Acceptance: same seed, BF16 versus low precision, a numeric quality delta.",
-        "Acceptance: calibration data listed in LICENSES.md.",
-        "Acceptance: an assertion on device capability, not a silent else branch.",
-        "NVFP4: read the toolkit doc for the block size. This site does not state one.",
+        "Acceptance: same seed, BF16 versus the narrow format, a numeric quality delta, calibration set named.",
+        "Acceptance: an explicit check of device capability. A silent else that runs BF16 must not be labelled FP8 or NVFP4.",
+        "Acceptance: the narrow run is its own row. It is not folded into a BF16 ablation you are comparing with someone else’s table.",
+        "Read the MiniMax-H3 community licence before any weight download. This module does not assume the weights are yours to use.",
       ]},
+      { type: "note", tag: "Wrong conclusion", text: "‘The Sol-H3 README uses NVFP4 and finishes in about 40 seconds, so the 4.52× BF16 pipeline is the same speed.’ Those are different recipes and different timing boundaries. Cite them separately or not at all." },
     ],
     "6": [
-      { type: "p", text: "You are not building vLLM. You are writing a serving note that could not be confused with a diffusion queue, plus a test that runs two different jobs back to back without sharing a graph or a residual." },
+      { type: "p", text: "You are not building vLLM. You are writing a note that cannot be confused with a diffusion queue, plus a test that runs two jobs back to back without sharing a graph or a residual." },
+      { type: "p", text: "Paged attention exists because decode KV caches fragment. A finished request must return pages without a copy. A full-frame DiT recomputes Q, K and V every step; there is often no growing cache to page. Autoregressive video is the exception, and the exception has to be named. Speculative decoding is exact only while the rejection check stands." },
       { type: "ul", items: [
-        "Acceptance: the note names the batching unit (token, sequence, clip, or step).",
-        "Acceptance: a regression test with two shapes in one process.",
-        "Acceptance: speculative decoding, if you touch it, reports acceptance rate and does not keep draft tokens after a rejection.",
+        "Acceptance: the note names the batching unit. Pads are either skipped by the kernel or absent. A static pad to the longest sequence is a cost you measured or removed.",
+        "Acceptance: admission checks a byte budget. One 33B resident model plus a second copy is a refused job, not an OOM of the worker.",
+        "Acceptance: a resolution change is logged as a different contract. Silent 768p to 480p retries fail review.",
+        "Report seconds per clip at a stated shape, step count and warmup. Tokens per second is the wrong unit for a sampler.",
       ]},
+      { type: "note", tag: "Wrong conclusion", text: "‘We added paged attention to the video server.’ If the model is not autoregressive, say what you paged. If the answer is ‘nothing’, delete the paragraph." },
     ],
     "7": [
-      { type: "p", text: "Three runs, one operating point. Dense baseline. Kernels. Kernels plus sparse attention. Kernels plus sparse attention plus cache. LPIPS against the dense run, per segment if you chain clips. A blind paired protocol written down before you watch, or an explicit statement that you did not run one." },
+      { type: "p", text: "Four rows, one operating point. Dense baseline. Kernels only. Kernels plus the attention approximation you named in Module 3. That stack plus the cache you named in Module 4. Nothing else moves: seed, sampler, steps, resolution, decode path, file writer." },
+      { type: "p", text: "Quality is two instruments. LPIPS (or a substitute you define) against the dense row, mean and worst frame, and on the concatenation if you chained segments. A blind paired preference whose protocol was written before you looked, with N stated. Small N stays an estimate. Skipping the pairs is allowed if the PR says you skipped them." },
+      {
+        type: "table",
+        headers: ["Row", "What may change", "What may not"],
+        rows: [
+          ["Dense", "Nothing. This is the reference.", "Seed, steps, resolution, sampler, weights, decoder"],
+          ["Kernels", "Fusion, compile, your kernel", "Everything in the dense row"],
+          ["+ sparse", "The attention approximation only", "Everything in the kernels row except attention"],
+          ["+ cache", "The skip gate only", "Everything in the sparse row except the cache"],
+        ],
+      },
       { type: "ul", items: [
-        "Portfolio: commit, GPU, SM, driver, torch, triton, CUDA, shape, steps, seed, dtype, licence note, timings, quality, one paragraph on what broke.",
-        "Leaderboard: only rows that clear a quality gate you set before seeing the ranking. This site's local board records simulated drills separately and will not accept a typed-in 4.52.",
-        "Do not write 'reproduced Sol' unless the experiment matches. 'Attempted the stack' is a complete sentence.",
+        "Portfolio: commit, GPU, SM, driver, torch, triton, CUDA, shape, steps, seed, dtype, licence note, timings with N, quality, one paragraph on what broke.",
+        "A 1.05× whose run-to-run spread is ±0.08 is not a speedup. Report the spread and stop.",
+        "Do not write ‘reproduced Sol’ unless the operating point matches. ‘Attempted the stack’ is a complete sentence.",
+        "The leaderboard script refuses a row with a missing field, a step mismatch, or LPIPS above the gate you set first.",
       ]},
-      { type: "table", headers: ["Row", "What may change", "What may not"], rows: [
-        ["Kernels", "Fusion, compile, your kernel", "Steps, seed, resolution, sampler, weights"],
-        ["+ sparse", "The attention approximation", "Everything in the kernels row except attention"],
-        ["+ cache", "The skip gate", "Everything in the sparse row except the cache"],
-      ]},
+      { type: "note", tag: "Wrong conclusion", text: "‘Our number is 4.52× because the blog’s number is 4.52×.’ That sentence fails the module even if your code is fast." },
     ],
   };
   return common[id] ?? [];

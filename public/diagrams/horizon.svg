@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="hzTitle hzDesc">
+  <title id="hzTitle">Skip error across steps</title>
+  <desc id="hzDesc">A U-shaped signal is high at the first and last step. Error stays flat when every step is computed, and climbs through the middle when those steps are skipped, until a reset.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="40" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Skip error</text>
+  <text x="32" y="64" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">SIMULATED · not a DiT</text>
+  <line x1="64" y1="280" x2="600" y2="280" stroke="#1c1914" stroke-width="2"/>
+  <polyline points="64,120 200,220 332,250 460,220 600,120" fill="none" stroke="#1c1914" stroke-width="3"/>
+  <polyline points="64,260 200,260 260,230 332,180 400,140 460,260 600,260" fill="none" stroke="#e2a322" stroke-width="4"/>
+  <text x="72" y="108" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="14">signal, high at the ends</text>
+  <text x="250" y="160" fill="#1a1408" font-family="IBM Plex Sans, sans-serif" font-size="14">error if you skip the middle</text>
+  <text x="470" y="248" fill="#1c1914" font-family="IBM Plex Mono, monospace" font-size="13">reset</text>
+</svg>

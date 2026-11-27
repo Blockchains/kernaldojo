@@ -43,11 +43,20 @@ function ModulePage() {
           </div>
         ))}
       </dl>
-      <h2 className="text-lg font-medium">Outcomes</h2>
-      <ul className="mt-2 list-disc pl-5">
-        {mod.outcomes.map((o) => (
-          <li key={o} className="mt-1">
-            {o}
+      <h2 className="text-lg font-medium">What you must be able to show</h2>
+      <ol className="mt-3 flex flex-col gap-2">
+        {mod.outcomes.map((o, i) => (
+          <li key={o} className="rounded-lg border border-line bg-surface px-3 py-3 text-sm">
+            <span className="font-mono text-xs text-accent">0{i + 1}</span>
+            <p className="mt-1">{o}</p>
+          </li>
+        ))}
+      </ol>
+      <h2 className="mt-6 text-lg font-medium">Insights</h2>
+      <ul className="mt-3 flex flex-col gap-2">
+        {mod.insights.map((text) => (
+          <li key={text} className="border-l-2 border-accent pl-3 text-sm">
+            {text}
           </li>
         ))}
       </ul>
