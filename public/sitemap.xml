@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kerneldojo.com/</loc>
+  </url>
+  <url>
+    <loc>https://kerneldojo.com/kernels</loc>
+  </url>
+  <url>
+    <loc>https://kerneldojo.com/path</loc>
+  </url>
+  <url>
+    <loc>https://kerneldojo.com/bench</loc>
+  </url>
+  <url>
+    <loc>https://kerneldojo.com/sources</loc>
+  </url>
+  <url>
+    <loc>https://kerneldojo.com/repo</loc>
+  </url>
+</urlset>

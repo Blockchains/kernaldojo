@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="rfTitle rfDesc">
+  <title id="rfTitle">Roofline</title>
+  <desc id="rfDesc">Arithmetic intensity on the horizontal axis and performance on the vertical axis. A rising memory line meets a flat compute ceiling at the ridge.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="42" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Roofline</text>
+  <text x="32" y="66" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">FLOP/byte →</text>
+  <line x1="72" y1="300" x2="600" y2="300" stroke="#1c1914" stroke-width="2"/>
+  <line x1="72" y1="300" x2="72" y2="88" stroke="#1c1914" stroke-width="2"/>
+  <polyline points="72,300 250,140 600,140" fill="none" stroke="#e2a322" stroke-width="4"/>
+  <circle cx="160" cy="236" r="7" fill="#1c1914"/>
+  <circle cx="430" cy="140" r="7" fill="#1c1914"/>
+  <line x1="250" y1="140" x2="250" y2="300" stroke="#1c1914" stroke-dasharray="4 4"/>
+  <text x="188" y="128" fill="#1c1914" font-family="IBM Plex Mono, monospace" font-size="13">ridge</text>
+  <text x="96" y="220" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="14">memory bound</text>
+  <text x="360" y="124" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="14">compute bound</text>
+  <text x="400" y="332" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">intensity</text>
+  <text x="16" y="180" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12" transform="rotate(-90 16 180)">performance</text>
+</svg>

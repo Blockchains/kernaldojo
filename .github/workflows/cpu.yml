@@ -1,0 +1,23 @@
+name: cpu
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Roofline arithmetic
+        working-directory: public/programme/modules/00-roofline
+        run: python -m unittest test_roofline.py
+      - name: Simulated cache error horizon
+        working-directory: public/programme/modules/04-cache
+        run: python -m unittest test_error_horizon.py
+      - name: Kernel byte arithmetic
+        working-directory: public/programme/modules/gpu
+        run: python -m unittest test_kernel_math.py

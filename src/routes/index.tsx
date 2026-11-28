@@ -40,6 +40,9 @@ function Home() {
         <Link to="/bench" className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm">
           Run a drill
         </Link>
+        <Link to="/kernels" className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm">
+          Kernel engineering
+        </Link>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <Tag>{ready ? `${done}/${modules.length} quizzes` : "Progress on this device"}</Tag>

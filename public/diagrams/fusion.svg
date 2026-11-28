@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="fuTitle fuDesc">
+  <title id="fuTitle">Fusion deletes a round trip</title>
+  <desc id="fuDesc">Eager RMSNorm writes an activation and the next linear reads it back. A fused kernel keeps that tensor on chip and stores once.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="40" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Fusion</text>
+  <text x="32" y="92" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">EAGER</text>
+  <rect x="32" y="104" width="120" height="56" fill="#1c1914"/>
+  <text x="52" y="138" fill="#efe8d8" font-family="IBM Plex Sans, sans-serif" font-size="16">RMSNorm</text>
+  <rect x="220" y="104" width="140" height="56" fill="none" stroke="#1c1914" stroke-width="2"/>
+  <text x="236" y="138" fill="#1c1914" font-family="IBM Plex Mono, monospace" font-size="14">write y, read y</text>
+  <rect x="428" y="104" width="120" height="56" fill="#1c1914"/>
+  <text x="460" y="138" fill="#efe8d8" font-family="IBM Plex Sans, sans-serif" font-size="16">Linear</text>
+  <text x="32" y="220" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">FUSED</text>
+  <rect x="32" y="232" width="280" height="64" fill="#e2a322"/>
+  <text x="52" y="270" fill="#1a1408" font-family="IBM Plex Sans, sans-serif" font-size="16">RMSNorm + linear, y stays on chip</text>
+  <text x="332" y="270" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">one store</text>
+</svg>

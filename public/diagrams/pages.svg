@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="pgTitle pgDesc">
+  <title id="pgTitle">Paged KV versus padding</title>
+  <desc id="pgDesc">Two sequences, length 17 and 3, on pages of 16. Paging uses three pages. Padding both to the longer static slot reserves more empty tokens.</desc>
+  <rect width="640" height="360" fill="#efe8d8"/>
+  <text x="32" y="42" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="22">Pages</text>
+  <text x="32" y="78" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">page = 16 tokens</text>
+  <rect x="32" y="110" width="140" height="48" fill="#1c1914"/>
+  <rect x="180" y="110" width="36" height="48" fill="#e2a322"/>
+  <text x="230" y="140" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">len 100 · 7 pages</text>
+  <rect x="32" y="176" width="48" height="48" fill="#1c1914"/>
+  <text x="96" y="206" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">len 5 · 1 page</text>
+  <text x="32" y="270" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">Lengths 100 and 5, page 16: waste 23.</text>
+  <text x="32" y="304" fill="#1c1914" font-family="IBM Plex Sans, sans-serif" font-size="16">Pad both to 100: waste 95. Paging wins.</text>
+  <text x="32" y="338" fill="#5c574c" font-family="IBM Plex Mono, monospace" font-size="12">Lengths 17 and 3 lose to padding. A coarse page is not free.</text>
+</svg>
