@@ -1,6 +1,6 @@
-export type KernelFamily = "Attention" | "Quant" | "Fusion" | "Tiles" | "CUDA";
+export type KernelFamily = "Attention" | "Quant" | "Fusion" | "Tiles" | "CUDA" | "Language";
 
-export type DiagramId = "roofline" | "fusion" | "tiles" | "horizon";
+export type DiagramId = "roofline" | "fusion" | "tiles" | "horizon" | "quant" | "softmax" | "pages";
 
 export type KernelFork = {
   id: string;
@@ -231,16 +231,117 @@ export const kernelForks: KernelFork[] = [
     upstreamName: "karpathy/llm.c",
     diagram: "roofline",
   },
+  {
+    id: "triton",
+    name: "Triton",
+    family: "Language",
+    hack: "The language this programme writes kernels in. A Triton program is a tile program: you choose the block, the compiler maps it to the GPU. CUTLASS is what you open after you can explain the Triton result, not before.",
+    read: "python/ and CONTRIBUTING.md — both present at the root of triton-lang/triton",
+    failure: "A pull request that adds an API without a test, or a benchmark that includes the compile. Steady state only.",
+    caution: "20,656 upstream stars on 28 Nov 2026. Their examples are not your model’s step time.",
+    license: "MIT",
+    language: "Python",
+    stars: "20,656",
+    fork: "https://github.com/Blockchains/triton",
+    upstream: "https://github.com/triton-lang/triton",
+    upstreamName: "triton-lang/triton",
+    diagram: "fusion",
+  },
+  {
+    id: "ao",
+    name: "torchao",
+    family: "Quant",
+    hack: "PyTorch-native quantisation for training and inference. The kernel is the narrow GEMM plus the scale. The policy file does not make the numerics right.",
+    read: "torchao/ and CONTRIBUTING.md — both present in pytorch/ao",
+    failure: "Casting the residual in the narrow type. The update disappears inside one quantum of the activation.",
+    caution: "3,039 upstream stars on 28 Nov 2026. Licence is BSD; read LICENSE before you copy a file out.",
+    license: "BSD",
+    language: "Python",
+    stars: "3,039",
+    fork: "https://github.com/Blockchains/ao",
+    upstream: "https://github.com/pytorch/ao",
+    upstreamName: "pytorch/ao",
+    diagram: "quant",
+  },
+  {
+    id: "xformers",
+    name: "xFormers",
+    family: "Attention",
+    hack: "Memory-efficient attention and the fused blocks around it. It is a neighbour of FlashAttention, not a second name for the same kernel. Say which function you called.",
+    read: "xformers/ and CONTRIBUTING.md — both present in facebookresearch/xformers",
+    failure: "Reporting an xFormers op and a FlashAttention op as one ablation row. They are different code.",
+    caution: "10,584 upstream stars on 28 Nov 2026. BSD-3-Clause.",
+    license: "BSD-3-Clause",
+    language: "Python",
+    stars: "10,584",
+    fork: "https://github.com/Blockchains/xformers",
+    upstream: "https://github.com/facebookresearch/xformers",
+    upstreamName: "facebookresearch/xformers",
+    diagram: "tiles",
+  },
+  {
+    id: "apex",
+    name: "Apex",
+    family: "Fusion",
+    hack: "NVIDIA’s fused optimisers, layer norm and amp extensions. Some of this landed in PyTorch itself. If the function you wanted is now in core, time that, and say the Apex path was the ancestor.",
+    read: "apex/ and csrc/ — both present in NVIDIA/apex. The default branch is master, not main.",
+    failure: "A pull request against main. Their default branch is master. A PR aimed at the wrong base does not land.",
+    caution: "9,014 upstream stars on 28 Nov 2026. BSD-3-Clause.",
+    license: "BSD-3-Clause",
+    language: "Python",
+    stars: "9,014",
+    fork: "https://github.com/Blockchains/apex",
+    upstream: "https://github.com/NVIDIA/apex",
+    upstreamName: "NVIDIA/apex",
+    diagram: "fusion",
+  },
+  {
+    id: "flashinfer-bench",
+    name: "FlashInfer Bench",
+    family: "Attention",
+    hack: "The bench where a kernel is a submission, not a screenshot. You take a definition, write the kernel, and the project’s runner records the trace. That trace is the result. A number you typed is not.",
+    read: "flashinfer_bench/ and CONTRIBUTING.md — both present in flashinfer-ai/flashinfer-bench",
+    failure: "A submission without the trace their runner produces. Also: treating their leaderboard as a KernelDojo measurement.",
+    caution: "313 upstream stars on 28 Nov 2026. Apache-2.0. This is the contribution surface for serving kernels.",
+    license: "Apache-2.0",
+    language: "Python",
+    stars: "313",
+    fork: "https://github.com/Blockchains/flashinfer-bench",
+    upstream: "https://github.com/flashinfer-ai/flashinfer-bench",
+    upstreamName: "flashinfer-ai/flashinfer-bench",
+    diagram: "tiles",
+  },
+  {
+    id: "hf-kernels",
+    name: "HF Kernels",
+    family: "Language",
+    hack: "Build a compute kernel and load it. The hub is the distribution step, after the kernel matches a reference. The kernel’s licence and the model’s licence are two documents.",
+    read: "kernels/ and CONTRIBUTING.md — both present in huggingface/kernels. kernel-builder/ is the build side.",
+    failure: "Publishing a kernel you have not matched against eager PyTorch, or shipping weights under the kernel’s Apache licence.",
+    caution: "796 upstream stars on 28 Nov 2026. Apache-2.0.",
+    license: "Apache-2.0",
+    language: "Rust",
+    stars: "796",
+    fork: "https://github.com/Blockchains/kernels",
+    upstream: "https://github.com/huggingface/kernels",
+    upstreamName: "huggingface/kernels",
+    diagram: "fusion",
+  },
 ];
 
-export const kernelFamilies = ["All", "Attention", "Quant", "Fusion", "Tiles", "CUDA"] as const;
+export const kernelFamilies = ["All", "Attention", "Quant", "Fusion", "Tiles", "CUDA", "Language"] as const;
+
+export function upstreamBase(upstreamName: string) {
+  if (upstreamName === "NVIDIA/apex" || upstreamName === "karpathy/llm.c") return "master";
+  return "main";
+}
 
 export const methodSteps = [
-  "Fork the library. Do not retype a blog into a new file and call it a kernel.",
+  "Fork the original repository to your own account. The Blockchains fork is the reading copy. Your pull request targets their default branch, not Blockchains.",
   "Open the one path named on the card. If the file is not there, stop and say so.",
   "Draw the bytes before you time. Roofline, fusion, tiles, or skip-error. The diagrams on this page are the templates.",
   "Match numerics against a reference you can name. A fast kernel that is a different function fails.",
   "Change one mechanism. Fusion, or sparsity, or precision, or a skip. Not two.",
-  "Write the failure you actually hit: a bad mask, a fallback dtype, a shape the graph refused, a cache that crossed a cut.",
+  "Open Compare on the original repo. Base is their default branch. Head is your fork. Include the test and what you did not measure.",
   "Keep upstream numbers in the upstream sentence. Your table contains only runs you did.",
 ];

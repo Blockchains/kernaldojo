@@ -7,7 +7,7 @@ export const REPO_URL = "https://github.com/Blockchains/kernaldojo";
 
 const primary = [
   { to: "/path", label: "Path", icon: BookOpen },
-  { to: "/kernels", label: "Kernels", icon: Cpu },
+  { to: "/kernels", label: "GPU AI", icon: Cpu },
   { to: "/bench", label: "Bench", icon: Gauge },
   { to: "/repo", label: "Repo", icon: FolderGit2 },
 ] as const;
@@ -42,12 +42,13 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
           <Link
             to="/kernels"
+            aria-current={pathname.startsWith("/kernels") ? "page" : undefined}
             className={
               "inline-flex min-h-11 items-center text-sm font-medium " +
               (pathname.startsWith("/kernels") ? "text-accent" : "text-fg")
             }
           >
-            Kernels
+            GPU AI Engineering
           </Link>
           <a
             href={REPO_URL}

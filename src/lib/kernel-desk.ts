@@ -94,5 +94,11 @@ export const drills: Record<string, string> = {
   kittens: "Pick a tile edge from the headers. Run tile_grid on a length that is not a multiple.",
   cutlass: "Open one example whose shape you understand. Pin the commit in the note.",
   tilelang: "Read the MIT licence, including the dated collaboration note, before you copy an example out.",
-  llmc: "One matmul, one sentence on its bytes. Training, not decode.",
+  llmc: "One matmul, one sentence on its bytes. Training, not decode. Their default branch is master.",
+  triton: "Read CONTRIBUTING.md. A student PR is a failing test made green, or a tutorial that is wrong. Not a new compiler feature on the first week.",
+  ao: "Open torchao/. Find one quantised GEMM and the scale beside it. PR against pytorch/ao main.",
+  xformers: "Name the function you would change in xformers/. Do not describe it as FlashAttention.",
+  apex: "Default branch is master. If the fused op now lives in PyTorch, say so in the PR and do not time the abandoned path.",
+  "flashinfer-bench": "Read CONTRIBUTING.md. A kernel PR needs the runner’s trace. A pasted number is rejected.",
+  "hf-kernels": "Read CONTRIBUTING.md. Match eager PyTorch before you ask the hub to load the kernel.",
 };

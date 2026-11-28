@@ -6,6 +6,7 @@ import {
   kernelFamilies,
   kernelForks,
   methodSteps,
+  upstreamBase,
   type KernelFamily,
 } from "@/lib/kernels";
 import { drills, pageWaste, qkvBytes, quantCodes, scoreBytes, sessions, tileBytes } from "@/lib/kernel-desk";
@@ -121,7 +122,7 @@ function KernelsPage() {
             Advanced GPU Kernel Engineering
           </h1>
           <p className="mt-4 max-w-md text-sm">
-            A method, not a leaderboard. Fork a real library, open one file, draw the bytes, match the numerics, change one mechanism. Star counts are upstream. No timing on this page is ours.
+            Nineteen libraries, forked for reading. The work is a pull request to the original repository, from your own fork, onto their default branch. The Blockchains copy is not the place a student patch lands.
           </p>
         </header>
 
@@ -268,8 +269,14 @@ function KernelsPage() {
                   >
                     Open fork
                   </a>
-                  <a href={k.upstream} className="inline-flex min-h-12 items-center justify-center text-sm">
+                  <a href={k.upstream} className="inline-flex min-h-12 items-center justify-center border-l border-line text-sm">
                     Upstream
+                  </a>
+                  <a
+                    href={`https://github.com/${k.upstreamName}/compare`}
+                    className="col-span-2 inline-flex min-h-12 items-center justify-center border-t border-line px-3 text-center text-sm font-medium"
+                  >
+                    Send a PR · base {upstreamBase(k.upstreamName)}
                   </a>
                 </div>
                 <p className="px-4 pt-3 text-sm">{k.hack}</p>

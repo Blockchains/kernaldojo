@@ -34,6 +34,17 @@ Created on the Blockchains GitHub account, 27 Nov 2026. Star counts are the upst
 | [tilelang](https://github.com/Blockchains/tilelang) | tile-ai/tilelang | README and LICENSE (MIT) |
 | [llm.c](https://github.com/Blockchains/llm.c) | karpathy/llm.c | `train_gpt2.cu` |
 
+## Where a student pull request goes
+
+The Blockchains forks are the reading copies. A patch lands on the original repository.
+
+1. Fork the original to your own account.
+2. Branch from their default branch. That is `main`, except NVIDIA/apex and karpathy/llm.c, which use `master`.
+3. Change one mechanism. Include the test. Say what you did not measure.
+4. Open `https://github.com/<original>/compare`. Base is their default branch. Head is your fork.
+
+Added 28 Nov 2026, and forked onto Blockchains: triton-lang/triton, pytorch/ao, facebookresearch/xformers, NVIDIA/apex, flashinfer-ai/flashinfer-bench, huggingface/kernels.
+
 ## Sessions
 
 Eight sessions, 38 hours. Each one opens a fork and leaves a number from `public/programme/modules/gpu/kernel_math.py`. That number is byte arithmetic. It is not a GPU time.
